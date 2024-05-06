@@ -18,8 +18,8 @@ pub enum SF6FrameDataError {
 impl Display for SF6FrameDataError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SF6FrameDataError::UnknownCharacter => write!(f, "Unknown character"),
-            SF6FrameDataError::UnknownMove => write!(f, "Unknown move"),
+            UnknownCharacter => write!(f, "Unknown character"),
+            UnknownMove => write!(f, "Unknown move"),
         }
     }
 }
