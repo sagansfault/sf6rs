@@ -12,7 +12,8 @@ use crate::LazyLock;
 
 #[derive(Debug)]
 pub enum SF6FrameDataError {
-    UnknownCharacter, UnknownMove
+    UnknownCharacter,
+    UnknownMove,
 }
 
 impl Display for SF6FrameDataError {
@@ -28,7 +29,7 @@ impl Error for SF6FrameDataError {}
 
 #[derive(Debug)]
 pub struct FrameData {
-    pub character_frame_data: Vec<CharacterFrameData>
+    pub character_frame_data: Vec<CharacterFrameData>,
 }
 
 impl FrameData {
@@ -48,7 +49,7 @@ impl FrameData {
 #[derive(Debug, Clone)]
 pub struct CharacterFrameData {
     pub character_id: CharacterId,
-    pub moves: Vec<Move>
+    pub moves: Vec<Move>,
 }
 
 #[derive(Debug, Clone)]
@@ -89,7 +90,7 @@ pub struct Move {
     pub punish_advantage: String,
     pub hit_advantage: String,
     pub block_advantage: String,
-    pub notes: String
+    pub notes: String,
 }
 
 pub async fn load_all() -> FrameData {
@@ -118,11 +119,12 @@ pub async fn load(character_id: &CharacterId) -> CharacterFrameData {
     let moves: Vec<Move> = zip.filter_map(|(identifier, block)| parse_move(identifier, block)).collect();
     CharacterFrameData {
         character_id: character_id.clone(),
-        moves
+        moves,
     }
 }
 
 static MOVE_IDENTIFIER_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div > div > section.section-collapsible > h5 > span").unwrap());
+
 fn select_move_identifiers(html: &Html) -> Vec<ElementRef> {
     html.select(&MOVE_IDENTIFIER_SELECTOR)
         .filter(|id| !id.is_empty())
@@ -130,6 +132,7 @@ fn select_move_identifiers(html: &Html) -> Vec<ElementRef> {
 }
 
 static MOVE_BLOCK_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div > div > section.section-collapsible > h5 + table.wikitable").unwrap());
+
 fn select_move_blocks(html: &Html) -> Vec<ElementRef> {
     html.select(&MOVE_BLOCK_SELECTOR)
         .filter(|id| !id.is_empty())
@@ -148,6 +151,7 @@ static HITBOX_IMAGE_ELEMENT_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Sele
 static HITBOX_IMAGE_URL_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(/images/thumb\S+) 2x").unwrap());
 static DATA_ROW_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("tr > td").unwrap());
 const DEFAULT_IMAGE: &str = "https://wiki.supercombo.gg/images/thumb/4/42/SF6_Logo.png/300px-SF6_Logo.png";
+
 fn parse_move(identifier: ElementRef, block: ElementRef) -> Option<Move> {
     let identifier = identifier.inner_html();
     let input = block.select(&INPUT_SELECTOR)
@@ -198,7 +202,7 @@ fn parse_move(identifier: ElementRef, block: ElementRef) -> Option<Move> {
     let dr_cancel_hit = data.next().unwrap_or_else(|| String::from("-"));
     let dr_cancel_block = data.next().unwrap_or_else(|| String::from("-"));
     let punish_advantage = data.next().unwrap_or_else(|| String::from("-"));
-    let hit_advantage = data.nth(10).unwrap_or_else(|| String::from("-"));
+    let hit_advantage = data.next().unwrap_or_else(|| String::from("-"));
     let block_advantage = data.next().unwrap_or_else(|| String::from("-"));
     let notes = data.next().unwrap_or_else(|| String::from("-"));
 
