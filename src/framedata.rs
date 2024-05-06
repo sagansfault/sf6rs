@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::fmt::Display;
 use std::iter::zip;
 
 use regex::Regex;
@@ -6,11 +7,42 @@ use scraper::{Element, ElementRef, Html, Selector};
 use tokio::task::JoinSet;
 
 use crate::character::{CharacterId, CHARACTERS};
+use crate::framedata::SF6FrameDataError::{UnknownCharacter, UnknownMove};
 use crate::LazyLock;
+
+#[derive(Debug)]
+pub enum SF6FrameDataError {
+    UnknownCharacter, UnknownMove
+}
+
+impl Display for SF6FrameDataError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SF6FrameDataError::UnknownCharacter => write!(f, "Unknown character"),
+            SF6FrameDataError::UnknownMove => write!(f, "Unknown move"),
+        }
+    }
+}
+
+impl Error for SF6FrameDataError {}
 
 #[derive(Debug, Clone)]
 pub struct FrameData {
     pub character_frame_data: Vec<CharacterFrameData>
+}
+
+impl FrameData {
+    pub fn find_move(&self, character_query: &str, move_query: &str) -> Result<&Move, SF6FrameDataError> {
+        let character_opt = self.character_frame_data.iter().find(|c| c.character_id.regex().is_match(character_query));
+        let Some(character) = character_opt else {
+            return Err(UnknownCharacter);
+        };
+        let move_opt = character.moves.iter().find(|m| m.identifier.eq_ignore_ascii_case(move_query));
+        let Some(move_found) = move_opt else {
+            return Err(UnknownMove);
+        };
+        Ok(move_found)
+    }
 }
 
 #[derive(Debug, Clone)]
