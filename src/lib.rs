@@ -26,6 +26,6 @@ impl<T> std::ops::Deref for LazyLock<T> {
 
 #[tokio::test]
 async fn test() {
-    let load = framedata::load(&character::RYU).await.unwrap();
-    println!("{:#?}", load.first());
+    let load = framedata::load(&character::RYU).await;
+    println!("{:#?}", load.moves.first());
 }

@@ -59,7 +59,7 @@ impl CharacterId {
     }
 
     pub fn regex(&self) -> &Regex {
-        self.regex_compiled.get_or_init(|| Regex::new(&format!(r"(?i)^({})$", self.regex_str)).unwrap())
+        self.regex_compiled.get_or_init(|| Regex::new(&format!(r"(?i)^{}$", self.regex_str)).unwrap())
     }
     
     pub fn frame_data_url(&self) -> String {
