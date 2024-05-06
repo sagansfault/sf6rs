@@ -1,18 +1,6 @@
-use character::{CharacterId};
-
 mod loader;
 
 pub(crate) mod selectors {}
-
-trait FrameDataUrl {
-    fn get_frame_data_url(&self) -> String;
-}
-
-impl FrameDataUrl for CharacterId {
-    fn get_frame_data_url(&self) -> String {
-        format!("https://wiki.supercombo.gg/w/Street_Fighter_6/{}/Data", self.frame_data_id)
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct Move {

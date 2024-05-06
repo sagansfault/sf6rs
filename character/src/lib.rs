@@ -61,6 +61,10 @@ impl CharacterId {
     pub fn regex(&self) -> &Regex {
         self.regex_compiled.get_or_init(|| Regex::new(&format!(r"(?i)^({})$", self.regex_str)).unwrap())
     }
+    
+    pub fn frame_data_url(&self) -> String {
+        format!("https://wiki.supercombo.gg/w/Street_Fighter_6/{}/Data", self.frame_data_id)
+    }
 }
 
 impl PartialEq<Self> for CharacterId {

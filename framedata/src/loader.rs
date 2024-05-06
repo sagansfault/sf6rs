@@ -6,7 +6,7 @@ use scraper::{Element, ElementRef, Html, Selector};
 
 use character::CharacterId;
 
-use crate::{FrameDataUrl, LazyLock, Move};
+use crate::{LazyLock, Move};
 
 pub(crate) async fn load(character_id: &CharacterId) -> Result<Vec<Move>, Box<dyn Error>> {
     let html = request_data_page(character_id).await?;
@@ -32,7 +32,7 @@ fn select_move_blocks(html: &Html) -> Vec<ElementRef> {
 }
 
 async fn request_data_page(character_id: &CharacterId) -> Result<Html, Box<dyn Error>> {
-    let text = reqwest::get(character_id.get_frame_data_url()).await?.text().await?;
+    let text = reqwest::get(character_id.frame_data_url()).await?.text().await?;
     Ok(Html::parse_document(&text))
 }
 
