@@ -1,0 +1,13 @@
+[package]
+name = "framedata"
+edition = "2021"
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+character = { path = "../character" }
+
+regex = { workspace = true }
+scraper = { workspace = true }
+tokio = { workspace = true }
+reqwest = { workspace = true }
