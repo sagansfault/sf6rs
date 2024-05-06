@@ -4,9 +4,8 @@ use std::iter::zip;
 use regex::Regex;
 use scraper::{Element, ElementRef, Html, Selector};
 
-use character::CharacterId;
-
 use crate::{LazyLock, Move};
+use crate::character::CharacterId;
 
 pub(crate) async fn load(character_id: &CharacterId) -> Result<Vec<Move>, Box<dyn Error>> {
     let html = request_data_page(character_id).await?;

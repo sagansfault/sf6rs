@@ -1,4 +1,5 @@
 mod loader;
+pub mod character;
 
 pub(crate) mod selectors {}
 
