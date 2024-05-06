@@ -8,6 +8,11 @@ use crate::character::CharacterId;
 use crate::LazyLock;
 
 #[derive(Debug, Clone)]
+pub struct FrameData {
+    pub moves: Vec<Move>
+}
+
+#[derive(Debug, Clone)]
 pub struct Move {
     pub identifier: String,
     pub input: String,
@@ -48,13 +53,15 @@ pub struct Move {
     pub notes: String
 }
 
-pub async fn load(character_id: &CharacterId) -> Result<Vec<Move>, Box<dyn Error>> {
+pub async fn load(character_id: &CharacterId) -> Result<FrameData, Box<dyn Error>> {
     let html = request_data_page(character_id).await?;
     let move_identifiers = select_move_identifiers(&html);
     let move_blocks = select_move_blocks(&html);
     let zip = zip(move_identifiers, move_blocks);
     let moves: Vec<Move> = zip.filter_map(|(identifier, block)| parse_move(identifier, block)).collect();
-    Ok(moves)
+    Ok(FrameData {
+        moves
+    })
 }
 
 static MOVE_IDENTIFIER_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div > div > section.section-collapsible > h5 > span").unwrap());
@@ -136,7 +143,7 @@ fn parse_move(identifier: ElementRef, block: ElementRef) -> Option<Move> {
     let hit_advantage = data.nth(10).unwrap_or_else(|| String::from("-"));
     let block_advantage = data.next().unwrap_or_else(|| String::from("-"));
     let notes = data.next().unwrap_or_else(|| String::from("-"));
-    
+
     let move_constructed = Move {
         identifier,
         input,

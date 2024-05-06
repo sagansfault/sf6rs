@@ -1,4 +1,4 @@
-mod framedata;
+pub mod framedata;
 pub mod character;
 
 
