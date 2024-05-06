@@ -1,4 +1,4 @@
-mod loader;
+mod framedata;
 pub mod character;
 
 pub(crate) mod selectors {}
@@ -68,6 +68,6 @@ impl<T> std::ops::Deref for LazyLock<T> {
 
 #[tokio::test]
 async fn test() {
-    let load = loader::load(&character::RYU).await.unwrap();
+    let load = framedata::load(&character::RYU).await.unwrap();
     println!("{:#?}", load.first());
 }

@@ -7,7 +7,7 @@ use scraper::{Element, ElementRef, Html, Selector};
 use crate::{LazyLock, Move};
 use crate::character::CharacterId;
 
-pub(crate) async fn load(character_id: &CharacterId) -> Result<Vec<Move>, Box<dyn Error>> {
+pub async fn load(character_id: &CharacterId) -> Result<Vec<Move>, Box<dyn Error>> {
     let html = request_data_page(character_id).await?;
     let move_identifiers = select_move_identifiers(&html);
     let move_blocks = select_move_blocks(&html);
