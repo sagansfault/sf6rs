@@ -3,12 +3,19 @@ use std::iter::zip;
 
 use regex::Regex;
 use scraper::{Element, ElementRef, Html, Selector};
+use tokio::task::JoinSet;
 
-use crate::character::CharacterId;
+use crate::character::{CharacterId, CHARACTERS};
 use crate::LazyLock;
 
 #[derive(Debug, Clone)]
 pub struct FrameData {
+    pub character_frame_data: Vec<CharacterFrameData>
+}
+
+#[derive(Debug, Clone)]
+pub struct CharacterFrameData {
+    pub character_id: CharacterId,
     pub moves: Vec<Move>
 }
 
@@ -53,15 +60,34 @@ pub struct Move {
     pub notes: String
 }
 
-pub async fn load(character_id: &CharacterId) -> Result<FrameData, Box<dyn Error>> {
-    let html = request_data_page(character_id).await?;
+pub async fn load_all() -> FrameData {
+    let mut frame_data = FrameData {
+        character_frame_data: Vec::new()
+    };
+    let mut set = JoinSet::new();
+    for character_id in CHARACTERS {
+        set.spawn(load(character_id));
+    }
+    while let Some(res) = set.join_next().await {
+        let Ok(character_frame_data) = res else {
+            println!("Error handling character frame data loading future {}", res.unwrap_err());
+            continue;
+        };
+        frame_data.character_frame_data.push(character_frame_data);
+    }
+    frame_data
+}
+
+pub async fn load(character_id: &CharacterId) -> CharacterFrameData {
+    let html = request_data_page(character_id).await.unwrap();
     let move_identifiers = select_move_identifiers(&html);
     let move_blocks = select_move_blocks(&html);
     let zip = zip(move_identifiers, move_blocks);
     let moves: Vec<Move> = zip.filter_map(|(identifier, block)| parse_move(identifier, block)).collect();
-    Ok(FrameData {
+    CharacterFrameData {
+        character_id: character_id.clone(),
         moves
-    })
+    }
 }
 
 static MOVE_IDENTIFIER_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div > div > section.section-collapsible > h5 > span").unwrap());
