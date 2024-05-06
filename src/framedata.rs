@@ -26,7 +26,7 @@ impl Display for SF6FrameDataError {
 
 impl Error for SF6FrameDataError {}
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct FrameData {
     pub character_frame_data: Vec<CharacterFrameData>
 }
