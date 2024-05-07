@@ -12,5 +12,5 @@ let load = framedata::load(&character::RYU).await;
 
 // Searching for moves
 let move_found = data.find_move("ryu", "5lp");
-let another_move_found = data.find_move_character(&character::RYU, "5lp");
+let another_move_found = data.find_move_character(&character::RYU, "623HP");
 ```

@@ -3,6 +3,12 @@ name = "sf6rs"
 version = "0.1.0"
 edition = "2021"
 authors = ["sagan"]
+description = "A library for interfacing with various Street Figher 6 data forms."
+readme = "README.md"
+repository = "https://github.com/sagansfault/sf6rs"
+license = "MIT OR Apache-2.0"
+keywords = ["streetfighter", "sf6", "scraper", "framedata"]
+categories = ["parsing", "games"]
 
 [dependencies]
 regex = "1.10.4"
