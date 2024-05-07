@@ -8,7 +8,7 @@ use tokio::task::JoinSet;
 
 use crate::character::{CharacterId, CHARACTERS};
 use crate::framedata::SF6FrameDataError::{UnknownCharacter, UnknownMove};
-use crate::LazyLock;
+use crate::{character, LazyLock};
 
 #[derive(Debug)]
 pub enum SF6FrameDataError {
@@ -39,11 +39,21 @@ impl FrameData {
     /// This function matches `character_query` by each [`CharacterId`]'s regex. And matches
     /// [`Move`]'s by their `identifier`.
     pub fn find_move(&self, character_query: &str, move_query: &str) -> Result<&Move, SF6FrameDataError> {
-        let character_opt = self.character_frame_data.iter().find(|c| c.character_id.regex().is_match(character_query));
-        let Some(character) = character_opt else {
+        let character_id_opt = character::get_character_by_regex(character_query);
+        let Some(character) = character_id_opt else {
             return Err(UnknownCharacter);
         };
-        let move_opt = character.moves.iter().find(|m| m.identifier.eq_ignore_ascii_case(move_query));
+        return self.find_move_character(character, move_query);
+    }
+
+    /// Returns a reference to a [`Move`] of a Character by a [`CharacterId`] and `move_query`.
+    /// This function matches [`Move`]'s by their `identifier`.
+    pub fn find_move_character(&self, character_id: &CharacterId, move_query: &str) -> Result<&Move, SF6FrameDataError> {
+        let character_frame_data_opt = self.character_frame_data.iter().find(|c| &c.character_id == character_id);
+        let Some(character_frame_data) = character_frame_data_opt else {
+            return Err(UnknownCharacter);
+        };
+        let move_opt = character_frame_data.moves.iter().find(|m| m.identifier.eq_ignore_ascii_case(move_query));
         let Some(move_found) = move_opt else {
             return Err(UnknownMove);
         };
