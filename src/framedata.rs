@@ -171,7 +171,6 @@ async fn request_data_page(character_id: &CharacterId) -> Result<Html, Box<dyn E
     Ok(Html::parse_document(&text))
 }
 
-static TABLE_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("tbody").unwrap());
 static INPUT_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("tr > th > div > p > span").unwrap());
 static NAME_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("tr > th > div > div").unwrap());
 static HITBOX_IMAGE_ELEMENT_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("tr > th > a").unwrap());
