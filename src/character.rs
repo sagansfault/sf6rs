@@ -27,19 +27,23 @@ pub static RASHID: CharacterId = CharacterId::new("rashid", "Rashid", r"rashid")
 pub static AKI: CharacterId = CharacterId::new("aki", "A.K.I.", r"a\.?k\.?i\.?");
 pub static ED: CharacterId = CharacterId::new("ed", "Ed", r"ed");
 
+/// An array of references to all the currently supported characters in this library
 pub static CHARACTERS: [&CharacterId; 21] = [
     &RYU, &LUKE, &JAMIE, &CHUNLI, &GUILE, &KIMBERLY, &JURI, &KEN, &BLANKA, &DHALSIM, &EHONDA,
     &DEEJAY, &MANON, &MARISA, &JP, &ZANGIEF, &LILY, &CAMMY, &RASHID, &AKI, &ED
 ];
 
+/// Finds a character by matching against their regex
 pub fn get_character_by_regex<'a>(input: &str) -> Option<&'a CharacterId> {
     CHARACTERS.iter().find(|c| c.regex().is_match(input)).copied()
 }
 
+/// Finds a character by matching against their id. Case sensitive.
 pub fn get_character_by_id<'a>(input: &str) -> Option<&'a CharacterId> {
     CHARACTERS.iter().find(|c| c.id.eq(input)).copied()
 }
 
+/// A struct representing a character this library supports. Unique by `id`
 #[derive(Clone, Debug)]
 pub struct CharacterId {
     pub id: &'static str,
@@ -58,10 +62,12 @@ impl CharacterId {
         }
     }
 
+    /// Gets the regex for this [`CharacterId`] via a [`OnceLock`]
     pub fn regex(&self) -> &Regex {
         self.regex_compiled.get_or_init(|| Regex::new(&format!(r"(?i)^{}$", self.regex_str)).unwrap())
     }
-    
+
+    /// Returns the url this library scrapes the data for each character
     pub fn frame_data_url(&self) -> String {
         format!("https://wiki.supercombo.gg/w/Street_Fighter_6/{}/Data", self.frame_data_id)
     }

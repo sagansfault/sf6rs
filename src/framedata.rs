@@ -27,12 +27,17 @@ impl Display for SF6FrameDataError {
 
 impl Error for SF6FrameDataError {}
 
+/// Contains data regarding frame data in this library
 #[derive(Debug)]
 pub struct FrameData {
+    /// A character's specific frame data
     pub character_frame_data: Vec<CharacterFrameData>,
 }
 
 impl FrameData {
+    /// Returns a reference to a [`Move`] of a Character by a `character_query` and `move_query`.
+    /// This function matches `character_query` by each [`CharacterId`]'s regex. And matches
+    /// [`Move`]'s by their `identifier`.
     pub fn find_move(&self, character_query: &str, move_query: &str) -> Result<&Move, SF6FrameDataError> {
         let character_opt = self.character_frame_data.iter().find(|c| c.character_id.regex().is_match(character_query));
         let Some(character) = character_opt else {
@@ -46,15 +51,22 @@ impl FrameData {
     }
 }
 
+/// Represents a characters frame data
 #[derive(Debug, Clone)]
 pub struct CharacterFrameData {
     pub character_id: CharacterId,
     pub moves: Vec<Move>,
 }
 
+/// A data struct holding all info scraped by this library for a given Move
 #[derive(Debug, Clone)]
 pub struct Move {
+    /// A unique identifier for this move. Often an input. Will provide differences for same-input
+    /// moves like Ryu's `Hashogeki (214p)` and `Denjin Hashogeki (214p)`, representing them as
+    /// `214P` and `214P(charged)` respectively.
     pub identifier: String,
+    /// The input for this move. Often duplicated. For example: Ryu's `Hashogeki (214p)` and `Denjin
+    /// Hashogeki (214p)`
     pub input: String,
     pub name: String,
     pub image_link: String,
@@ -93,6 +105,9 @@ pub struct Move {
     pub notes: String,
 }
 
+/// Loads all frame data provided by this module. This function makes web-requests for each
+/// characters frame data page, scrapes it, parses it, and collects it. It is recommended to cache
+/// the result of this load function.
 pub async fn load_all() -> FrameData {
     let mut frame_data = FrameData {
         character_frame_data: Vec::new()
@@ -111,6 +126,8 @@ pub async fn load_all() -> FrameData {
     frame_data
 }
 
+/// This function loads frame data, similar to [`load_all`], however only requesting, scraping,
+/// parsing, and collecting the data for one given [`CharacterId`]
 pub async fn load(character_id: &CharacterId) -> CharacterFrameData {
     let html = request_data_page(character_id).await.unwrap();
     let move_identifiers = select_move_identifiers(&html);
