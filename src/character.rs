@@ -4,6 +4,7 @@ use std::hash::{Hash, Hasher};
 use std::sync::OnceLock;
 
 use regex::Regex;
+use crate::LazyLock;
 
 pub static RYU: CharacterId = CharacterId::new("ryu", "Ryu", r"ryu");
 pub static LUKE: CharacterId = CharacterId::new("luke", "Luke", r"luke");
@@ -26,12 +27,13 @@ pub static CAMMY: CharacterId = CharacterId::new("cammy", "Cammy", r"cammy");
 pub static RASHID: CharacterId = CharacterId::new("rashid", "Rashid", r"rashid");
 pub static AKI: CharacterId = CharacterId::new("aki", "A.K.I.", r"a\.?k\.?i\.?");
 pub static ED: CharacterId = CharacterId::new("ed", "Ed", r"ed");
+pub static AKUMA: CharacterId = CharacterId::new("akuma", "Akuma", r"akuma|gouki");
 
-/// An array of references to all the currently supported characters in this library
-pub static CHARACTERS: [&CharacterId; 21] = [
+/// A collection of references to all the currently supported characters in this library
+pub static CHARACTERS: LazyLock<Vec<&CharacterId>> = LazyLock::new(|| vec!(
     &RYU, &LUKE, &JAMIE, &CHUNLI, &GUILE, &KIMBERLY, &JURI, &KEN, &BLANKA, &DHALSIM, &EHONDA,
-    &DEEJAY, &MANON, &MARISA, &JP, &ZANGIEF, &LILY, &CAMMY, &RASHID, &AKI, &ED
-];
+    &DEEJAY, &MANON, &MARISA, &JP, &ZANGIEF, &LILY, &CAMMY, &RASHID, &AKI, &ED, &AKUMA
+));
 
 /// Finds a character by matching against their regex
 pub fn get_character_by_regex<'a>(input: &str) -> Option<&'a CharacterId> {

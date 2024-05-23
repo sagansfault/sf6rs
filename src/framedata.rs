@@ -123,7 +123,7 @@ pub async fn load_all() -> FrameData {
         character_frame_data: Vec::new()
     };
     let mut set = JoinSet::new();
-    for character_id in CHARACTERS {
+    for character_id in (*CHARACTERS).iter() {
         set.spawn(load(character_id));
     }
     while let Some(res) = set.join_next().await {
