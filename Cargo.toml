@@ -1,6 +1,6 @@
 [package]
 name = "sf6rs"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2021"
 authors = ["sagan"]
 description = "A library for interfacing with various Street Figher 6 data forms."
