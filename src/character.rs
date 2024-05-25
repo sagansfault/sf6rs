@@ -8,7 +8,7 @@ use crate::LazyLock;
 
 pub static RYU: CharacterId = CharacterId::new("ryu", "Ryu", "ryu", r"ryu");
 pub static LUKE: CharacterId = CharacterId::new("luke", "Luke", "luke", r"luke");
-pub static JAMIE: CharacterId = CharacterId::new("jamie", "Jamie", "jaime", r"jamie");
+pub static JAMIE: CharacterId = CharacterId::new("jamie", "Jamie", "jamie", r"jamie");
 pub static CHUNLI: CharacterId = CharacterId::new("chunli", "Chun-Li", "chunli", r"chun(-?li)?");
 pub static GUILE: CharacterId = CharacterId::new("guile", "Guile", "guile", r"guile");
 pub static KIMBERLY: CharacterId = CharacterId::new("kimberly", "Kimberly", "kimberly", r"kim(berly)?");
