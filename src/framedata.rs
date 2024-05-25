@@ -342,7 +342,7 @@ fn parse_move_containers(html: &Html) -> Vec<ElementRef> {
 static MOVE_CONTAINER_NAME_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div.movename").unwrap());
 static MOVE_GIF_ELEMENT_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div.hitbox > a > img").unwrap());
 fn parse_move_container(container: ElementRef) -> Option<MoveGif> {
-    let move_name = container.select(&MOVE_CONTAINER_NAME_SELECTOR).next()?.inner_html();
+    let move_name = container.select(&MOVE_CONTAINER_NAME_SELECTOR).next()?.inner_html().trim().to_string();
     let gif_url = container.select(&MOVE_GIF_ELEMENT_SELECTOR).next()?
         .value().attr("src")?.to_string();
     Some(MoveGif {
