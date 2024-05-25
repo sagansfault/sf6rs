@@ -1,6 +1,7 @@
+use crate::framedata::load_all;
+
 pub mod framedata;
 pub mod character;
-
 
 pub struct LazyLock<T, F = fn() -> T> {
     data: std::sync::OnceLock<T>,
@@ -26,4 +27,7 @@ impl<T> std::ops::Deref for LazyLock<T> {
 
 #[tokio::test]
 async fn test() {
+    let data = load_all().await;
+    let x = data.find_character_frame_data(&character::AKUMA).unwrap();
+    println!("{:?}", x.gifs.iter().next().unwrap());
 }

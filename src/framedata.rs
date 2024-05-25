@@ -6,9 +6,9 @@ use regex::Regex;
 use scraper::{Element, ElementRef, Html, Selector};
 use tokio::task::JoinSet;
 
+use crate::{character, LazyLock};
 use crate::character::{CharacterId, CHARACTERS};
 use crate::framedata::SF6FrameDataError::{UnknownCharacter, UnknownMove};
-use crate::{character, LazyLock};
 
 #[derive(Debug)]
 pub enum SF6FrameDataError {
@@ -28,13 +28,28 @@ impl Display for SF6FrameDataError {
 impl Error for SF6FrameDataError {}
 
 /// Contains data regarding frame data in this library
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FrameData {
     /// A character's specific frame data
     pub character_frame_data: Vec<CharacterFrameData>,
 }
 
 impl FrameData {
+
+    /// Finds a character's frame data by a move query
+    pub fn find_character_frame_data_query(&self, character_query: &str) -> Result<&CharacterFrameData, SF6FrameDataError> {
+        character::get_character_by_regex(character_query)
+            .ok_or(UnknownCharacter)
+            .and_then(|e| self.find_character_frame_data(e))
+    }
+
+    /// Finds a character's frame data by their id
+    pub fn find_character_frame_data(&self, character_id: &CharacterId) -> Result<&CharacterFrameData, SF6FrameDataError> {
+        self.character_frame_data.iter()
+            .find(|c| &c.character_id == character_id)
+            .ok_or(UnknownCharacter)
+    }
+
     /// Returns a reference to a [`Move`] of a Character by a `character_query` and `move_query`.
     /// This function matches `character_query` by each [`CharacterId`]'s regex. And matches
     /// [`Move`]'s by their `identifier`.
@@ -49,10 +64,7 @@ impl FrameData {
     /// Returns a reference to a [`Move`] of a Character by a [`CharacterId`] and `move_query`.
     /// This function matches [`Move`]'s by their `identifier`.
     pub fn find_move_character(&self, character_id: &CharacterId, move_query: &str) -> Result<&Move, SF6FrameDataError> {
-        let character_frame_data_opt = self.character_frame_data.iter().find(|c| &c.character_id == character_id);
-        let Some(character_frame_data) = character_frame_data_opt else {
-            return Err(UnknownCharacter);
-        };
+        let character_frame_data = self.find_character_frame_data(character_id)?;
         let move_opt = character_frame_data.moves.iter().find(|m| m.identifier.eq_ignore_ascii_case(move_query));
         let Some(move_found) = move_opt else {
             return Err(UnknownMove);
@@ -66,6 +78,7 @@ impl FrameData {
 pub struct CharacterFrameData {
     pub character_id: CharacterId,
     pub moves: Vec<Move>,
+    pub gifs: Vec<MoveGif>
 }
 
 /// A data struct holding all info scraped by this library for a given Move
@@ -115,6 +128,12 @@ pub struct Move {
     pub notes: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct MoveGif {
+    pub name: String,
+    pub url: String
+}
+
 /// Loads all frame data provided by this module. This function makes web-requests for each
 /// characters frame data page, scrapes it, parses it, and collects it. It is recommended to cache
 /// the result of this load function.
@@ -139,14 +158,25 @@ pub async fn load_all() -> FrameData {
 /// This function loads frame data, similar to [`load_all`], however only requesting, scraping,
 /// parsing, and collecting the data for one given [`CharacterId`]
 pub async fn load(character_id: &CharacterId) -> CharacterFrameData {
-    let html = request_data_page(character_id).await.unwrap();
-    let move_identifiers = select_move_identifiers(&html);
-    let move_blocks = select_move_blocks(&html);
-    let zip = zip(move_identifiers, move_blocks);
-    let moves: Vec<Move> = zip.filter_map(|(identifier, block)| parse_move(identifier, block)).collect();
+    let moves = {
+        let html = request_data_page(character_id).await.unwrap();
+        let move_identifiers = select_move_identifiers(&html);
+        let move_blocks = select_move_blocks(&html);
+        let zip = zip(move_identifiers, move_blocks);
+        let moves: Vec<Move> = zip.filter_map(|(identifier, block)| parse_move(identifier, block)).collect();
+        moves
+    };
+
+    let gifs = {
+        let gif_html = request_gif_page(character_id).await.unwrap();
+        let containers = parse_move_containers(&gif_html);
+        let gifs: Vec<MoveGif> = containers.into_iter().filter_map(|e| parse_move_container(e)).collect();
+        gifs
+    };
     CharacterFrameData {
         character_id: character_id.clone(),
         moves,
+        gifs
     }
 }
 
@@ -288,3 +318,24 @@ fn hitbox_image_matcher(element: String) -> Option<String> {
         .map(|s| format!("https://wiki.supercombo.gg/{}", s))
 }
 
+static MOVE_CONTAINER_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div.movecontainer").unwrap());
+fn parse_move_containers(html: &Html) -> Vec<ElementRef> {
+    html.select(&MOVE_CONTAINER_SELECTOR).collect::<Vec<ElementRef>>()
+}
+
+static MOVE_CONTAINER_NAME_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div.movename").unwrap());
+static MOVE_GIF_ELEMENT_SELECTOR: LazyLock<Selector> = LazyLock::new(|| Selector::parse("div.hitbox > a > img").unwrap());
+fn parse_move_container(container: ElementRef) -> Option<MoveGif> {
+    let move_name = container.select(&MOVE_CONTAINER_NAME_SELECTOR).next()?.inner_html();
+    let gif_url = container.select(&MOVE_GIF_ELEMENT_SELECTOR).next()?
+        .value().attr("src")?.to_string();
+    Some(MoveGif {
+        name: move_name,
+        url: format!("https://ultimateframedata.com/sf6/{}", gif_url),
+    })
+}
+
+async fn request_gif_page(character_id: &CharacterId) -> Result<Html, Box<dyn Error>> {
+    let text = reqwest::get(character_id.gif_data_url()).await?.text().await?;
+    Ok(Html::parse_document(&text))
+}
