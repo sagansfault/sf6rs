@@ -8,12 +8,13 @@ use tokio::task::JoinSet;
 
 use crate::{character, LazyLock};
 use crate::character::{CharacterId, CHARACTERS};
-use crate::framedata::SF6FrameDataError::{UnknownCharacter, UnknownMove};
+use crate::framedata::SF6FrameDataError::{UnknownCharacter, UnknownGif, UnknownMove};
 
 #[derive(Debug)]
 pub enum SF6FrameDataError {
     UnknownCharacter,
     UnknownMove,
+    UnknownGif,
 }
 
 impl Display for SF6FrameDataError {
@@ -21,6 +22,7 @@ impl Display for SF6FrameDataError {
         match self {
             UnknownCharacter => write!(f, "Unknown character"),
             UnknownMove => write!(f, "Unknown move"),
+            UnknownGif => write!(f, "Unknown gif")
         }
     }
 }
@@ -70,6 +72,20 @@ impl FrameData {
             return Err(UnknownMove);
         };
         Ok(move_found)
+    }
+
+    pub fn find_gif(&self, character_query: &str, gif_query: &str) -> Result<&MoveGif, SF6FrameDataError> {
+        let character_id_opt = character::get_character_by_regex(character_query);
+        let Some(character) = character_id_opt else {
+            return Err(UnknownCharacter);
+        };
+        return self.find_gif_character(character, gif_query);
+    }
+
+    pub fn find_gif_character(&self, character_id: &CharacterId, gif_query: &str) -> Result<&MoveGif, SF6FrameDataError> {
+        let character_frame_data = self.find_character_frame_data(character_id)?;
+        let gif_opt = character_frame_data.gifs.iter().find(|g| g.name.eq_ignore_ascii_case(gif_query));
+        gif_opt.ok_or(UnknownGif)
     }
 }
 
