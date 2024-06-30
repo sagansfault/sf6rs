@@ -28,11 +28,12 @@ pub static RASHID: CharacterId = CharacterId::new("rashid", "Rashid", "rashid", 
 pub static AKI: CharacterId = CharacterId::new("aki", "A.K.I.", "aki", r"a\.?k\.?i\.?");
 pub static ED: CharacterId = CharacterId::new("ed", "Ed", "ed", r"ed");
 pub static AKUMA: CharacterId = CharacterId::new("akuma", "Akuma", "akuma", r"akuma|gouki");
+pub static MBISON: CharacterId = CharacterId::new("mbison", "M.Bison", "mbison", r"bison");
 
 /// A collection of references to all the currently supported characters in this library
 pub static CHARACTERS: LazyLock<Vec<&CharacterId>> = LazyLock::new(|| vec!(
     &RYU, &LUKE, &JAMIE, &CHUNLI, &GUILE, &KIMBERLY, &JURI, &KEN, &BLANKA, &DHALSIM, &EHONDA,
-    &DEEJAY, &MANON, &MARISA, &JP, &ZANGIEF, &LILY, &CAMMY, &RASHID, &AKI, &ED, &AKUMA
+    &DEEJAY, &MANON, &MARISA, &JP, &ZANGIEF, &LILY, &CAMMY, &RASHID, &AKI, &ED, &AKUMA, &MBISON
 ));
 
 /// Finds a character by matching against their regex
