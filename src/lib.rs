@@ -29,6 +29,7 @@ impl<T> std::ops::Deref for LazyLock<T> {
 async fn test() {
     let data = load_all().await;
     let x = data.find_character_frame_data(&character::MBISON).unwrap();
+    println!("{:?}", data.find_move("mbison", "5lp"));
     println!("{:?}", x.gifs.iter().next().unwrap());
     println!("{:?}", x.moves.iter().next().unwrap());
 }
